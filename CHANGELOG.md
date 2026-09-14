@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0
+
+- Reworked the README into a complete GitHub-facing developer guide covering installation, native builds, diagnostics, source/PTX boundaries, explicit AMD modules, Python, wheels, verification evidence and clean-room limits.
+- Added repository badges for release, license, supported platform and experimental status.
+- Added GitHub distribution and Pages deployment guidance directly to the README.
+- Promoted project metadata to 1.4.0 for this documented release batch. This remains an experimental native AMD subset, not full CUDA or transparent CUDA-wheel parity.
+
 ## 1.3.0
 
 - Added an original CUDAtoAMD project logo for repository, package and documentation use.

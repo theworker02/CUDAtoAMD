@@ -13,7 +13,7 @@ class ReleaseTests(unittest.TestCase):
     def test_release_metadata_is_consistent(self):
         report = release_report()
         self.assertTrue(release_ready(report), report)
-        self.assertEqual(report["version"], "1.3.0")
+        self.assertEqual(report["version"], "1.4.0")
 
     def test_release_cli_reports_missing_requested_library(self):
         output = io.StringIO()

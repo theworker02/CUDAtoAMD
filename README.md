@@ -2,69 +2,257 @@
   <img src="assets/cudatoamd-logo.svg" width="720" alt="CUDAtoAMD — CUDA-oriented workflows, native AMD execution">
 </p>
 
-# CUDA-to-AMD Compatibility Runtime
+<p align="center">
+  <a href="https://github.com/theworker02/CUDAtoAMD/releases"><img src="https://img.shields.io/github/v/release/theworker02/CUDAtoAMD?display_name=tag&sort=semver&label=release" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/theworker02/CUDAtoAMD" alt="Apache-2.0 license"></a>
+  <a href="https://github.com/theworker02/CUDAtoAMD"><img src="https://img.shields.io/badge/platform-Windows%20%2B%20ROCm-4866c6" alt="Windows and ROCm"></a>
+  <a href="COMPATIBILITY.md"><img src="https://img.shields.io/badge/status-experimental-f4a261" alt="Experimental status"></a>
+</p>
 
-An early, open interoperability project for assessing and incrementally adapting CUDA-oriented source workloads to AMD's HIP/ROCm ecosystem.
+<h1 align="center">CUDA-to-AMD Compatibility Runtime</h1>
 
-Version 1.3.0 adds an original project identity and a no-dependency [GitHub Pages site](docs/site/index.html), including a deploy workflow for GitHub Actions. It does not publish or enable Pages by itself; see [the Pages instructions](docs/site/README.md) after the repository has been pushed to GitHub.
+<p align="center"><strong>Assess CUDA-oriented workloads, compile supported source paths, and execute native AMD code through HIP/ROCm—without pretending an AMD GPU is an NVIDIA GPU.</strong></p>
 
-Version 1.2.0 added a real [HIP/ROCm initialization workflow](docs/initialization.md): `compat init` loads the native runtime, initializes AMD hardware, reports the selected GPU truthfully, and can run a numerical GPU self-test. `compat toolchain` reports the HIP tools used to compile CUDA-oriented source for AMD.
+CUDAtoAMD is an open, clean-room developer runtime for incrementally adapting supported CUDA-oriented source workflows to AMD's HIP/ROCm ecosystem. It offers a CUDA-facing host API subset, an explicit native AMD runtime, bounded source/PTX compilation paths, diagnostic tooling, and conservative wheel admission checks.
 
-The CUDA-facing host workflow also supports FP16/BF16/FP32 `cublasGemmEx`, strided-batched Ex GEMM and FP32 strided-batched GEMM (FP32 accumulation/output). Compile a CUDA-syntax kernel to an AMD code object, load and launch it through the Driver facade, and use the cuBLAS and cuFFT C2C subsets. See [the supported source workflow and its limits](docs/cuda-source-compatibility.md).
+> [!WARNING]
+> CUDAtoAMD is experimental. It is **not** a universal CUDA replacement and does not run arbitrary CUDA binaries, CUDA-locked Python wheels, or full CUDA frameworks unchanged. Unsupported behavior is reported explicitly rather than silently emulated.
 
-Local developers can also load native AMD kernels, run FP32 neural operators, replay captured GPU workflows, and call them explicitly from NumPy or CPU PyTorch inference code. The runtime provides C/C++ APIs, mixed-precision GEMM, optional FFT and a CUDA source inventory.
+## What is in v1.4.0
 
-**[Start here: build, run a checked demo, and use the API](docs/local-developer-guide.md).**
+- Native HIP device initialization that reports the selected AMD GPU truthfully and can run a numerical GPU self-test.
+- Clean-room CUDA Runtime and Driver API compatibility subsets, plus explicit AMD C/C++ APIs for streams, pools, events and HSACO modules.
+- A bounded CUDA-syntax and PTX compilation route to AMD code objects through HIP tools.
+- FP32/mixed-precision GEMM subsets, optional C2C FFT, selected neural operators, graph capture/replay, and explicit Python bindings.
+- CUDA source inventory, toolchain discovery, wheel preflight, release validation and a GitHub Pages project site.
 
-This is an experimental native AMD runtime, **not** a universal CUDA replacement. It does not run arbitrary CUDA binaries or CUDA-locked frameworks unchanged.
+## Why this exists
 
-After building and installing the inference extra:
+CUDA-oriented codebases often mix portable host logic with NVIDIA-specific APIs, build tools, libraries and binary assumptions. HIPIFY is valuable for source migration, but it is not a drop-in runtime for every source tree or prebuilt application. CUDAtoAMD focuses on the boundary developers can inspect and verify:
 
-```powershell
-python -m compat doctor --native
-python -m compat demo --operation softmax
+```text
+CUDA-oriented source or explicit AMD code object
+                    │
+                    ▼
+        CUDAtoAMD headers / developer tools
+                    │
+                    ▼
+      compatibility ABI and semantic checks
+                    │
+                    ▼
+             HIP / ROCm on AMD hardware
 ```
 
-## Quick start
+The project does not spoof `nvidia-smi`, fabricate an NVIDIA compute capability, redistribute NVIDIA DLLs, or claim that AMD hardware is CUDA hardware. It aims to make the supported route practical and diagnosable for local developers.
 
-The source analyzer requires Python 3.10+ and no third-party packages. GPU inference uses the optional inference extra and a separately built native library.
+## Start here
+
+### 1. Inspect a CUDA-oriented source tree
+
+The analyzer requires Python 3.10+ and has no third-party dependencies. It is read-only: it inventories CUDA headers, APIs, constructs and PTX inputs without changing the target project.
 
 ```powershell
 python -m compat analyze path/to/cuda-project
 python -m compat analyze path/to/cuda-project --format json
 python -m compat matrix
 python -m compat doctor
-python -m compat toolchain --format json
-python -m compat init --library build-hip/compatcuda.dll --self-test --format json
 ```
 
-`analyze` is read-only. It reports detected CUDA constructs and their known compatibility classifications; it never modifies the project. See [COMPATIBILITY.md](COMPATIBILITY.md), [SPECIFICATION.md](SPECIFICATION.md), and [docs/compatibility-landscape.md](docs/compatibility-landscape.md).
+Use the output to decide whether a workload fits the implemented surface before attempting a port or native build.
 
-## Native build environment
+### 2. Build the native runtime on Windows
 
-The ABI target was verified with Visual Studio Build Tools (C++ workload) and ROCm 7.1 on Windows. Start a 64-bit Visual Studio developer prompt, then:
+The verified host is Windows with Visual Studio Build Tools, ROCm/HIP SDK 7.1 and an AMD RX 7800 XT (`gfx1101`). Start a 64-bit Visual Studio developer prompt.
 
 ```bat
+:: Backend-free ABI build: no GPU SDK required
 cmake -S . -B build-msvc -G "NMake Makefiles" -DCOMPATCUDA_ENABLE_HIP=OFF -DCOMPATCUDA_BUILD_TESTS=ON
 cmake --build build-msvc
+ctest --test-dir build-msvc --output-on-failure
 
+:: HIP build: HIP and hipBLAS required; hipFFT is optional
 set CMAKE_PREFIX_PATH=C:\Program Files\AMD\ROCm\7.1
 cmake -S . -B build-hip -G "NMake Makefiles" -DCOMPATCUDA_ENABLE_HIP=ON -DCOMPATCUDA_BUILD_TESTS=ON
 cmake --build build-hip
+ctest --test-dir build-hip --output-on-failure
 ```
 
-The HIP-enabled build requires HIP and hipBLAS; hipFFT is optional (disable with COMPATCUDA_ENABLE_FFT=OFF). Native AMD graphs support single-stream capture, instantiation, replay and cancellation. The older CUDA graph facade still only creates/destroys handles. The HIP-disabled build needs no GPU SDK and returns deterministic not-initialized errors.
+If hipFFT is unavailable, use `-DCOMPATCUDA_ENABLE_FFT=OFF`. The runtime returns a deterministic backend-unavailable result for the FFT API rather than loading a missing DLL.
 
-The experimental `compat cc` command invokes external HIPIFY/hipcc; its application-level workflow is not yet validated. `compat run --dry-run program.exe` shows the explicit ROCm-enabled launch environment; it does not inject or spoof DLLs. Runner options must precede the program path.
+### 3. Check the real AMD execution path
 
-## Status
+```powershell
+python -m compat toolchain --format json
+python -m compat init --library build-hip/compatcuda.dll --self-test --format json
+python -m compat doctor --native
+```
 
-Verified locally on Windows with MSVC, HIP SDK 7.1 and gfx1101: a compiled native vector-add kernel produces 257 exact results through file and memory module loading; core GPU and small FP32 BLAS tests pass. This is narrow correctness evidence, not production readiness or a compatibility percentage.
+`compat init` loads the named native library, runs `amdInit`, selects the requested HIP device and reports actual name, architecture, memory, compute-unit and wave-size properties. With `--self-test`, it also executes a small native softmax check. It does not manufacture an NVIDIA device report.
 
-Run `ctest --test-dir build-hip --output-on-failure` after building. The kernel fixture defaults to gfx1101; configure `-DCOMPATCUDA_TEST_ARCH=<your-gfx-target>` for another GPU. No matching device yields an explicit skipped kernel test. Other architectures and Linux have not been verified. For a staged local install use `cmake --install build-hip --prefix staging`; see [RELEASING.md](RELEASING.md) for the complete validation sequence.
+## Developer workflows
 
-See the [local developer guide](docs/local-developer-guide.md), [native runtime contract](docs/native-runtime.md), [Python bindings](docs/python-native.md) and [math adapters](docs/native-math.md). Native AMD handles now have type/lifetime validation. Neural support includes RMSNorm, softmax, SwiGLU and interleaved RoPE; framework support is an explicit CPU-staged inference bridge, without gradients. Full CUDA graph parity, transparent framework interception and validation of raw data pointers remain outside the implemented scope. Wheels do not bundle vendor DLLs or GPU code objects. Nothing has been published.
+### Explicit AMD module loading
+
+The native C API accepts already-compiled AMDGPU code objects (`.hsaco`) and exposes explicit module loading, function lookup, stream-bound dispatch, events and memory pools. This is the most deterministic route for native AMD execution.
+
+```c
+#include "amd_runtime.h"
+
+AmdDevice device;
+AmdStream stream;
+AmdMemPool pool;
+AmdModule module;
+AmdFunction kernel;
+
+amdInit(0);
+amdGetDevice(&device, 0);
+amdStreamCreate(device, &stream);
+amdMemPoolCreate(device, 64 * 1024 * 1024, &pool);
+amdModuleLoadFile(device, "vector_add.hsaco", &module);
+amdModuleGetFunction(&kernel, module, "vector_add");
+/* Allocate, bind arguments, launch, synchronize and destroy explicitly. */
+```
+
+See [the native runtime contract](docs/native-runtime.md) and [C++ RAII wrapper](include/amd_runtime.hpp) for the complete ownership model.
+
+### CUDA-facing host subset
+
+The project ships clean-room headers for a documented subset of CUDA Runtime, Driver, cuBLAS and cuFFT-shaped APIs. They are intended for source-oriented experiments and supported host workflows, not for replacement DLL naming or binary interception.
+
+```cpp
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+
+// Supported calls enter the compatibility ABI and dispatch to HIP/hipBLAS.
+// Check every result; unsupported calls fail deterministically.
+cudaError_t status = cudaDeviceSynchronize();
+```
+
+Read [CUDA source compatibility](docs/cuda-source-compatibility.md) before relying on a symbol. The capability database and source analyzer are the authority for the implemented classification, not the presence of a similarly named header.
+
+### CUDA-oriented source and bounded PTX compilation
+
+`compat cc` invokes external HIPIFY/hipcc for the narrow source path it supports. The PTX tools accept a tested subset and fail closed on operations that have not been lowered or tested.
+
+```powershell
+python -m compat toolchain --format json
+python -m compat cc examples/cuda_vector.cu -o vector_add.hsaco
+python -m compat ptx examples/vector_add_bounded.ptx -o vector_add.hsaco
+```
+
+Supported compiler features and known exclusions are documented in [PTX subset support](docs/ptx-subset.md). This is not a general NVVM/PTX compiler, cubin translator or CUDA binary JIT.
+
+### Python and framework-adjacent code
+
+The optional bindings provide explicit lifecycle management around the native library. NumPy and CPU-PyTorch paths stage supported FP32 inference operations through the native runtime. Autograd, `torch.cuda`, custom CUDA wheels and framework binary interception are intentionally outside this surface.
+
+```powershell
+python -m pip install ".[inference]"
+python -m compat demo --operation softmax
+python -m compat framework-doctor --format json
+```
+
+See [Python native bindings](docs/python-native.md) and [framework integration](docs/framework-integration.md).
+
+### Wheel admission, not wheel spoofing
+
+Use the wheel tools before executing third-party packages that may carry CUDA-native extensions:
+
+```powershell
+python -m compat wheel-doctor path/to/package.whl --format json
+python -m compat python --wheel path/to/package.whl --wheel-sha256 <reviewed-sha256> -- script.py
+```
+
+CUDAtoAMD blocks known CUDA-linked extension patterns unless a workflow has been explicitly reviewed. It does not replace CUDA DLL imports or claim transparent CUDA-wheel execution. Details: [CUDA wheel execution](docs/cuda-wheel-execution.md).
+
+## Implemented capability map
+
+| Area | Included now | Important boundary |
+| --- | --- | --- |
+| Device/runtime | HIP initialization, device properties, allocation, copies, streams, events, pools | Native HIP availability is required |
+| Modules | `.hsaco` file/memory loading, symbol lookup, kernel launch | No cubin or arbitrary CUDA binary translation |
+| CUDA-facing APIs | Documented Runtime and Driver subsets | Not a complete CUDA ABI or replacement vendor DLL |
+| Math | FP32/mixed-precision GEMM subset; optional C2C FFT | Not cuBLAS/cuFFT parity; hipFFT may be unavailable |
+| Neural ops | RMSNorm, softmax, SwiGLU, interleaved RoPE | Correctness-first, not production-tuned kernels |
+| Graphs | Single-stream native capture, instantiate, replay, cancellation | CUDA graph facade remains limited |
+| Compiler | Bounded CUDA-syntax workflow and tested PTX subset | No general PTX/NVVM frontend or tensor-core translation |
+| Python | CFFI lifecycle and CPU-staged NumPy/PyTorch inference | No autograd, `torch.cuda` or transparent wheel support |
+| Diagnostics | Source analysis, compatibility matrix, toolchain, init and release checks | Results describe known scope, not a compatibility percentage |
+
+## Verification evidence
+
+On the verified Windows host, the HIP build passes six native CTests, including module correctness, CUDA contract and core HIP tests. The HIP-disabled build passes four deterministic ABI/error-path CTests. The Python suite covers analysis, source/PTX boundaries, native lifecycle, module loading, mixed GEMM, FFT, graphs, neural operations, wheel admission, release metadata and the Pages site structure.
+
+The native vector-add fixture has been checked through both file and memory module loading. The current release has also exercised real `compat init --self-test` execution on the RX 7800 XT. This is meaningful narrow correctness evidence—not a benchmark, production certification or a claim about every AMD GPU, Linux, CUDA application or AI framework.
+
+## Documentation
+
+| Need | Read |
+| --- | --- |
+| Build and first native run | [Local developer guide](docs/local-developer-guide.md) |
+| Real HIP initialization | [Initialization guide](docs/initialization.md) |
+| CUDA-facing source path | [CUDA source compatibility](docs/cuda-source-compatibility.md) |
+| PTX syntax and limits | [PTX subset](docs/ptx-subset.md) |
+| C/C++ native ABI | [Native runtime](docs/native-runtime.md) |
+| Math and neural APIs | [Native math](docs/native-math.md) |
+| Python lifecycle | [Python native bindings](docs/python-native.md) |
+| PyTorch-adjacent adapter | [Framework integration](docs/framework-integration.md) |
+| CUDA wheel safety | [Wheel execution](docs/cuda-wheel-execution.md) |
+| Version and release validation | [Release checklist](RELEASING.md) |
+| API compatibility inventory | [Compatibility matrix](COMPATIBILITY.md) |
+| System design | [Architecture](ARCHITECTURE.md) |
+
+## Repository layout
+
+```text
+assets/          Project identity assets
+bindings/        Explicit language bindings
+compat/          Python CLI, source analysis, compiler and wheel diagnostics
+compatibility/   Capability inventory data
+docs/            Developer, API and release documentation
+docs/site/       Dependency-free GitHub Pages project site
+examples/        CUDA-oriented source and bounded PTX examples
+include/         Public C, C++ and CUDA-facing compatibility headers
+kernels/         Native HIP neural kernels
+runtime/         Internal compatibility ABI contract
+src/             Runtime, driver, graph, math and HIP adapter implementation
+tests/           Python and native correctness/contract coverage
+```
+
+## Installation and distribution
+
+The repository is the primary distribution channel. A Python wheel contains the analyzer and developer tools; it intentionally does **not** bundle HIP/ROCm vendor DLLs or AMD GPU code objects.
+
+```powershell
+python -m pip install cuda-amd-compat
+python -m compat doctor
+```
+
+For an authoritative local package artifact, build from a checked source checkout:
+
+```powershell
+python -m pip wheel . --no-deps --no-build-isolation --wheel-dir dist
+python -m compat release-check --library build-hip/compatcuda.dll --format json
+```
+
+The GitHub Pages source lives in [`docs/site/`](docs/site/). Once Pages is enabled in the repository settings with **GitHub Actions** as the source, the included workflow deploys it from `main`. The final URL is normally `https://theworker02.github.io/CUDAtoAMD/`.
+
+## Security, legal and clean-room boundaries
+
+- The project is Apache-2.0 licensed; see [LICENSE](LICENSE).
+- It does not redistribute NVIDIA software, drivers or proprietary libraries; see [LEGAL.md](LEGAL.md) and [THIRD_PARTY.md](THIRD_PARTY.md).
+- Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
+- Validate untrusted source trees, PTX and wheel inputs before execution. The toolchain deliberately rejects unsupported constructs instead of attempting unsafe implicit conversions.
+- Do not treat this runtime as a sandbox or a substitute for GPU-driver security updates.
+
+## Near-term direction
+
+The practical next steps are deeper testing and incremental, documented expansion of the supported surface: additional source/compiler constructs, more numerical conformance coverage, broader AMD architecture validation, and native math library adapters where their ROCm dependencies are actually available. Full CUDA API, PTX/NVVM and transparent CUDA-framework parity are not represented as current milestones.
+
+## Contributing
+
+Contributions should preserve the project’s clean-room and truthful-compatibility principles. Please include focused tests, update the capability documentation, distinguish verified behavior from planned work, and avoid adding vendor binaries, credentials or opaque generated artifacts to the repository.
 
 ## License
 
-Apache-2.0. This project does not redistribute NVIDIA software or libraries.
+Copyright © 2026 Magnexis contributors. Licensed under [Apache-2.0](LICENSE).

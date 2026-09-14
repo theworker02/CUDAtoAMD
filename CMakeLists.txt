@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(compatcuda VERSION 1.3.0 LANGUAGES C CXX)
+project(compatcuda VERSION 1.4.0 LANGUAGES C CXX)
 
 option(COMPATCUDA_ENABLE_HIP "Build the HIP-backed runtime implementation" OFF)
 option(COMPATCUDA_BUILD_TESTS "Build ABI smoke tests" OFF)
