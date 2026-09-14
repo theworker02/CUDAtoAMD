@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "libraries": [
+    {
+      "header": "cuda_runtime_api.h",
+      "symbols": [
+        "cudaGetDeviceCount", "cudaSetDevice", "cudaGetDevice", "cudaDeviceSynchronize",
+        "cudaGetLastError", "cudaGetErrorString", "cudaMalloc", "cudaFree", "cudaMemcpy",
+        "cudaMemset", "cudaStreamCreate", "cudaStreamDestroy", "cudaStreamSynchronize",
+        "cudaEventCreate", "cudaEventDestroy", "cudaEventRecord", "cudaEventSynchronize"
+      ]
+    },
+    {"header": "cuda.h", "symbols": ["cuInit", "cuDeviceGetCount"]}
+  ]
+}

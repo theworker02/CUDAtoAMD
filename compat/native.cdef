@@ -1,0 +1,40 @@
+typedef struct AmdDevice_t* AmdDevice; typedef struct AmdStream_t* AmdStream; typedef struct AmdEvent_t* AmdEvent; typedef struct AmdModule_t* AmdModule; typedef struct AmdFunction_t* AmdFunction; typedef struct AmdMemPool_t* AmdMemPool;
+typedef uint64_t AmdDeviceAddr;
+typedef struct AmdGraph_t* AmdGraph;
+
+typedef enum AmdResult { AMD_SUCCESS=0, AMD_ERROR_INVALID_VALUE=1, AMD_ERROR_OUT_OF_MEMORY=2, AMD_ERROR_NOT_INITIALIZED=3, AMD_ERROR_DEVICE_NOT_FOUND=4, AMD_ERROR_INVALID_HANDLE=5, AMD_ERROR_MODULE_LOAD_FAILED=6, AMD_ERROR_SYMBOL_NOT_FOUND=7, AMD_ERROR_LAUNCH_FAILED=8, AMD_ERROR_NOT_READY=9, AMD_ERROR_UNKNOWN=999 } AmdResult;
+typedef enum AmdWavefrontSize { AMD_WAVE_SIZE_32=32, AMD_WAVE_SIZE_64=64 } AmdWavefrontSize;
+AmdResult amdEventCreateOnDevice(AmdDevice device, AmdEvent* event);
+typedef struct AmdDeviceProps { char name[256]; char gcn_arch[64]; size_t total_vram_bytes; uint32_t compute_units; uint32_t max_threads_per_block; AmdWavefrontSize native_wave_size; int supports_wmma; int is_cdna; } AmdDeviceProps;
+typedef struct AmdDim3 { uint32_t x, y, z; } AmdDim3;
+
+
+
+
+
+AmdResult amdInit(uint32_t flags); AmdResult amdGetDeviceCount(int* count); AmdResult amdGetDevice(AmdDevice* device, int index); AmdResult amdDeviceDestroy(AmdDevice device); AmdResult amdGetDeviceProperties(AmdDevice device, AmdDeviceProps* props);
+AmdResult amdMemPoolCreate(AmdDevice device, size_t initial_capacity, AmdMemPool* pool); AmdResult amdMemPoolDestroy(AmdMemPool pool); AmdResult amdMemAllocAsync(AmdDeviceAddr* dptr, size_t bytes, AmdMemPool pool, AmdStream stream); AmdResult amdMemFreeAsync(AmdDeviceAddr dptr, AmdMemPool pool, AmdStream stream);
+AmdResult amdMemcpyHtoDAsync(AmdDeviceAddr dst,const void* src,size_t bytes,AmdStream stream); AmdResult amdMemcpyDtoHAsync(void* dst,AmdDeviceAddr src,size_t bytes,AmdStream stream); AmdResult amdMemcpyDtoDAsync(AmdDeviceAddr dst,AmdDeviceAddr src,size_t bytes,AmdStream stream); AmdResult amdMemHostRegister(void* ptr,size_t bytes); AmdResult amdMemHostUnregister(void* ptr);
+AmdResult amdStreamCreate(AmdDevice device,AmdStream* stream); AmdResult amdStreamDestroy(AmdStream stream); AmdResult amdStreamSynchronize(AmdStream stream); AmdResult amdStreamQuery(AmdStream stream); AmdResult amdEventCreate(AmdEvent* event); AmdResult amdEventDestroy(AmdEvent event); AmdResult amdEventRecord(AmdEvent event,AmdStream stream); AmdResult amdStreamWaitEvent(AmdStream stream,AmdEvent event); AmdResult amdEventElapsedTime(float* ms,AmdEvent start,AmdEvent stop);
+AmdResult amdModuleLoadFile(AmdDevice device,const char* path,AmdModule* module); AmdResult amdModuleLoadData(AmdDevice device,const void* image_bytes,size_t size,AmdModule* module); AmdResult amdModuleUnload(AmdModule module); AmdResult amdModuleGetFunction(AmdFunction* function,AmdModule module,const char* name); AmdResult amdLaunchKernel(AmdFunction function,AmdDim3 grid,AmdDim3 block,uint32_t shared,AmdStream stream,void** args); const char* amdGetErrorString(AmdResult result);
+typedef struct AmdBlasHandle_t* AmdBlasHandle;
+
+typedef enum AmdBlasDataType { AMD_BLAS_F32=0, AMD_BLAS_F16=1, AMD_BLAS_BF16=2 } AmdBlasDataType;
+AmdResult amdBlasCreateOnDevice(AmdDevice device, AmdBlasHandle* handle);
+AmdResult amdBlasGemmStridedBatchedEx(AmdBlasHandle handle,AmdStream stream,AmdBlasDataType input_type,int trans_a,int trans_b,int m,int n,int k,float alpha,AmdDeviceAddr a,int lda,long long stride_a,AmdDeviceAddr b,int ldb,long long stride_b,float beta,AmdDeviceAddr c,int ldc,long long stride_c,int batch_count);
+typedef enum AmdBlasOperation { AMD_BLAS_OP_N = 0, AMD_BLAS_OP_T = 1 } AmdBlasOperation;
+AmdResult amdBlasCreate(AmdBlasHandle* handle); AmdResult amdBlasDestroy(AmdBlasHandle handle);
+AmdResult amdBlasSgemm(AmdBlasHandle handle,AmdBlasOperation trans_a,AmdBlasOperation trans_b,int m,int n,int k,float alpha,AmdDeviceAddr a,int lda,AmdDeviceAddr b,int ldb,float beta,AmdDeviceAddr c,int ldc);
+
+AmdResult amdBlasSgemmStridedBatched(AmdBlasHandle handle,AmdBlasOperation trans_a,AmdBlasOperation trans_b,int m,int n,int k,float alpha,AmdDeviceAddr a,int lda,long long stride_a,AmdDeviceAddr b,int ldb,long long stride_b,float beta,AmdDeviceAddr c,int ldc,long long stride_c,int batch_count);
+
+typedef struct AmdFftPlan_t* AmdFftPlan;
+typedef struct AmdComplex32 { float real, imag; } AmdComplex32;
+
+AmdResult amdFftPlan1d(AmdDevice device,int length,int batch_count,AmdFftPlan* plan);
+AmdResult amdFftExecC2C(AmdFftPlan plan,AmdStream stream,AmdDeviceAddr input,AmdDeviceAddr output,int direction);
+AmdResult amdFftDestroy(AmdFftPlan plan);
+AmdResult amdGraphBegin(AmdStream stream,AmdGraph* graph);
+AmdResult amdGraphEnd(AmdGraph graph);
+AmdResult amdGraphLaunch(AmdGraph graph,AmdStream stream);
+AmdResult amdGraphDestroy(AmdGraph graph);

@@ -1,0 +1,12 @@
+schema_version: "1.0"
+profile: ai
+capabilities:
+  - { id: tensor-memory, status: SUPPORTED_ADAPTED, layer: runtime, notes: "HIP allocation registry implemented for the core subset." }
+  - { id: streams-events, status: SUPPORTED_ADAPTED, layer: runtime, notes: "HIP-backed logical wrappers implemented for the core subset." }
+  - { id: fp32-gemm, status: EXPERIMENTAL, layer: library, notes: "Requires a hipBLAS adapter; not implemented." }
+  - { id: fp16-bf16-gemm, status: EXPERIMENTAL, layer: library, notes: "No compatibility adapter or conformance result yet." }
+  - { id: random-generation, status: EXPERIMENTAL, layer: library, notes: "No hipRAND adapter yet." }
+  - { id: neural-primitives, status: WINDOWS_BLOCKED, layer: ai-kernels, notes: "Project-owned HIP kernels are not implemented." }
+  - { id: autograd-training, status: UNSUPPORTED, layer: framework, notes: "PyTorch adapter is not implemented." }
+  - { id: distributed-training, status: WINDOWS_BLOCKED, layer: collective, notes: "No portable collective backend yet." }
+  - { id: runtime-compilation, status: PARTIAL, layer: kernel, notes: "HIPRTC mapping is planned; no compiled-module API yet." }

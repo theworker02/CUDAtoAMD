@@ -1,0 +1,31 @@
+.version 7.0
+.target sm_50
+.address_size 64
+.visible .entry ptx_saxpy_bounded(.param .u64 x, .param .u64 y, .param .u64 output, .param .u32 count, .param .f32 alpha) {
+  .reg .pred %p<1>;
+  .reg .u32 %r<4>;
+  .reg .u64 %d<7>;
+  .reg .f32 %f<5>;
+  ld.param.u64 %d0, [x];
+  ld.param.u64 %d1, [y];
+  ld.param.u64 %d2, [output];
+  ld.param.u32 %r3, [count];
+  ld.param.f32 %f0, [alpha];
+  mov.u32 %r0, %ctaid.x;
+  mul.lo.u32 %r1, %r0, %ntid.x;
+  add.u32 %r2, %r1, %tid.x;
+  setp.ge.u32 %p0, %r2, %r3;
+  @%p0 bra DONE;
+  cvt.u64.u32 %d3, %r2;
+  mul.wide.u32 %d4, %r2, 4;
+  add.u64 %d3, %d0, %d4;
+  add.u64 %d5, %d1, %d4;
+  add.u64 %d6, %d2, %d4;
+  ld.global.f32 %f1, [%d3];
+  ld.global.f32 %f2, [%d5];
+  mul.rn.f32 %f3, %f1, %f0;
+  fma.rn.f32 %f4, %f1, %f0, %f2;
+  st.global.f32 [%d6], %f4;
+  DONE:;
+  ret;
+}

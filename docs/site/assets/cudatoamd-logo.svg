@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-labelledby="title description">
+  <title id="title">CUDAtoAMD</title>
+  <desc id="description">Original CUDAtoAMD project mark: CUDA-oriented workflows with native AMD execution.</desc>
+  <defs>
+    <linearGradient id="signal" x1="40" y1="40" x2="280" y2="260" gradientUnits="userSpaceOnUse"><stop stop-color="#78a9ff"/><stop offset=".5" stop-color="#9b8cff"/><stop offset="1" stop-color="#ffb86b"/></linearGradient>
+    <linearGradient id="word" x1="350" y1="55" x2="1060" y2="245" gradientUnits="userSpaceOnUse"><stop stop-color="#f4f7ff"/><stop offset="1" stop-color="#bec8e5"/></linearGradient>
+  </defs>
+  <rect width="1200" height="300" rx="44" fill="#0b1020"/>
+  <rect x="22" y="22" width="256" height="256" rx="34" fill="#131c34" stroke="#293a63" stroke-width="2"/>
+  <path d="M83 79 154 150 83 221" fill="none" stroke="url(#signal)" stroke-linecap="round" stroke-linejoin="round" stroke-width="27"/>
+  <path d="M217 80 146 151 217 222" fill="none" stroke="#eaf0ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="14" opacity=".9"/>
+  <path d="M92 241h116" stroke="#526dba" stroke-linecap="round" stroke-width="10"/>
+  <text x="338" y="143" fill="url(#word)" font-family="Segoe UI, Arial, sans-serif" font-size="90" font-weight="700" letter-spacing="-3">CUDA<tspan fill="#8198da" font-weight="500">to</tspan>AMD</text>
+  <text x="344" y="205" fill="#9cabc9" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="600" letter-spacing="5">NATIVE AMD EXECUTION</text>
+</svg>
