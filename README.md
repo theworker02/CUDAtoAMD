@@ -1,17 +1,17 @@
-<p align="center">
-  <img src="assets/cudatoamd-logo.svg" width="720" alt="CUDAtoAMD — CUDA-oriented workflows, native AMD execution">
+﻿<p align="center">
+  <img src="assets/cudatoamd-logo.svg" width="720" alt="CUDAtoAMD â€” CUDA-oriented workflows, native AMD execution">
 </p>
 
 <p align="center">
   <a href="https://github.com/theworker02/CUDAtoAMD/releases"><img src="https://img.shields.io/github/v/release/theworker02/CUDAtoAMD?display_name=tag&sort=semver&label=release" alt="Latest release"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/theworker02/CUDAtoAMD" alt="Apache-2.0 license"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/theworker02/CUDAtoAMD" alt="source-available proprietary license"></a>
   <a href="https://github.com/theworker02/CUDAtoAMD"><img src="https://img.shields.io/badge/platform-Windows%20%2B%20ROCm-4866c6" alt="Windows and ROCm"></a>
   <a href="COMPATIBILITY.md"><img src="https://img.shields.io/badge/status-experimental-f4a261" alt="Experimental status"></a>
 </p>
 
 <h1 align="center">CUDA-to-AMD Compatibility Runtime</h1>
 
-<p align="center"><strong>Assess CUDA-oriented workloads, compile supported source paths, and execute native AMD code through HIP/ROCm—without pretending an AMD GPU is an NVIDIA GPU.</strong></p>
+<p align="center"><strong>Assess CUDA-oriented workloads, compile supported source paths, and execute native AMD code through HIP/ROCmâ€”without pretending an AMD GPU is an NVIDIA GPU.</strong></p>
 
 CUDAtoAMD is an open, clean-room developer runtime for incrementally adapting supported CUDA-oriented source workflows to AMD's HIP/ROCm ecosystem. It offers a CUDA-facing host API subset, an explicit native AMD runtime, bounded source/PTX compilation paths, diagnostic tooling, and conservative wheel admission checks.
 
@@ -32,14 +32,14 @@ CUDA-oriented codebases often mix portable host logic with NVIDIA-specific APIs,
 
 ```text
 CUDA-oriented source or explicit AMD code object
-                    │
-                    ▼
+                    â”‚
+                    â–¼
         CUDAtoAMD headers / developer tools
-                    │
-                    ▼
+                    â”‚
+                    â–¼
       compatibility ABI and semantic checks
-                    │
-                    ▼
+                    â”‚
+                    â–¼
              HIP / ROCm on AMD hardware
 ```
 
@@ -183,7 +183,7 @@ CUDAtoAMD blocks known CUDA-linked extension patterns unless a workflow has been
 
 On the verified Windows host, the HIP build passes six native CTests, including module correctness, CUDA contract and core HIP tests. The HIP-disabled build passes four deterministic ABI/error-path CTests. The Python suite covers analysis, source/PTX boundaries, native lifecycle, module loading, mixed GEMM, FFT, graphs, neural operations, wheel admission, release metadata and the Pages site structure.
 
-The native vector-add fixture has been checked through both file and memory module loading. The current release has also exercised real `compat init --self-test` execution on the RX 7800 XT. This is meaningful narrow correctness evidence—not a benchmark, production certification or a claim about every AMD GPU, Linux, CUDA application or AI framework.
+The native vector-add fixture has been checked through both file and memory module loading. The current release has also exercised real `compat init --self-test` execution on the RX 7800 XT. This is meaningful narrow correctness evidenceâ€”not a benchmark, production certification or a claim about every AMD GPU, Linux, CUDA application or AI framework.
 
 ## Documentation
 
@@ -239,7 +239,7 @@ The GitHub Pages source lives in [`docs/site/`](docs/site/). Once Pages is enabl
 
 ## Security, legal and clean-room boundaries
 
-- The project is Apache-2.0 licensed; see [LICENSE](LICENSE).
+- The project is source-available proprietary licensed; see [LICENSE](LICENSE).
 - It does not redistribute NVIDIA software, drivers or proprietary libraries; see [LEGAL.md](LEGAL.md) and [THIRD_PARTY.md](THIRD_PARTY.md).
 - Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 - Validate untrusted source trees, PTX and wheel inputs before execution. The toolchain deliberately rejects unsupported constructs instead of attempting unsafe implicit conversions.
@@ -251,8 +251,9 @@ The practical next steps are deeper testing and incremental, documented expansio
 
 ## Contributing
 
-Contributions should preserve the project’s clean-room and truthful-compatibility principles. Please include focused tests, update the capability documentation, distinguish verified behavior from planned work, and avoid adding vendor binaries, credentials or opaque generated artifacts to the repository.
+Contributions should preserve the projectâ€™s clean-room and truthful-compatibility principles. Please include focused tests, update the capability documentation, distinguish verified behavior from planned work, and avoid adding vendor binaries, credentials or opaque generated artifacts to the repository.
 
 ## License
 
-Copyright © 2026 Magnexis contributors. Licensed under [Apache-2.0](LICENSE).
+**Source-available proprietary** — evaluation under [LICENSE](./LICENSE); commercial / production use via [COMMERCIAL.md](./COMMERCIAL.md). See [LICENSE_TRANSITION_NOTICE.md](./LICENSE_TRANSITION_NOTICE.md) and [NOTICE](./NOTICE).
+

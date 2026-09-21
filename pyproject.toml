@@ -1,4 +1,4 @@
-[build-system]
+﻿[build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
@@ -7,7 +7,7 @@ name = "cuda-amd-compat"
 version = "1.4.0"
 description = "Compatibility inventory and analyzer for CUDA-oriented workloads on AMD ROCm/HIP"
 requires-python = ">=3.10"
-license = {text = "Apache-2.0"}
+license = { text = "Proprietary" }
 
 [project.scripts]
 compat = "compat.cli:main"
