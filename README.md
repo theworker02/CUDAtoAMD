@@ -208,7 +208,7 @@ The native vector-add fixture has been checked through both file and memory modu
 | Version and release validation | [Release checklist](RELEASING.md) |
 | API compatibility inventory | [Compatibility matrix](COMPATIBILITY.md) |
 | System design | [Architecture](ARCHITECTURE.md) |
-| Acquisition / diligence | [ACQUISITION.md](ACQUISITION.md), [Acquisition guide](docs/ACQUISITION_GUIDE.md), [Data room](docs/acquisition/) |
+| Acquisition / diligence | [ACQUISITION.md](ACQUISITION.md), [Acquisition guide](docs/ACQUISITION_GUIDE.md), [Data room](docs/acquisition/), [ROADMAP.md](ROADMAP.md) |
 
 ## Repository layout
 
@@ -255,7 +255,7 @@ The GitHub Pages source lives in [`docs/site/`](docs/site/). Once Pages is enabl
 
 ## Near-term direction
 
-The practical next steps are deeper testing and incremental, documented expansion of the supported surface: additional source/compiler constructs, more numerical conformance coverage, broader AMD architecture validation, and native math library adapters where their ROCm dependencies are actually available. Full CUDA API, PTX/NVVM and transparent CUDA-framework parity are not represented as current milestones.
+See [ROADMAP.md](ROADMAP.md). Practical next steps remain deeper testing and incremental, documented expansion of the supported surface: inventory/ABI sync, Runtime gaps already marked PARTIAL, Linux CI verification, and native math adapters only where ROCm dependencies exist. Full CUDA API, PTX/NVVM and transparent CUDA-framework parity are **non-goals** for the near term.
 
 ## Contributing
 
