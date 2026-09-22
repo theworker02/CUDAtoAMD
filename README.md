@@ -1,4 +1,4 @@
-﻿<p align="center">
+<p align="center">
   <img src="assets/cudatoamd-logo.svg" width="720" alt="CUDAtoAMD â€” CUDA-oriented workflows, native AMD execution">
 </p>
 

@@ -9,6 +9,8 @@
 - Added acquisition packaging: root `ACQUISITION.md` and `docs/acquisition/` (README, EXECUTIVE_SUMMARY, KNOWN_LIMITATIONS, BUYER_DEMO).
 - Updated `PORTING.md` for `port-plan` and corrected the outdated claim that `compat run` is unexposed; README now links port-plan, acquisition materials, and expanded guides.
 - Added `tests/test_portplan.py`.
+- Added `ROADMAP.md`; expanded `LEGAL.md`, `SECURITY.md`, and `THIRD_PARTY.md` for diligence.
+- Added `.github/FUNDING.yml` (`github` + `thanks_dev` for theworker02).
 
 ## 1.4.0
 
