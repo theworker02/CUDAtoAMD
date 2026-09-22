@@ -1,4 +1,4 @@
-﻿# Commercial licensing — CUDAtoAMD
+# Commercial licensing — CUDAtoAMD
 
 CUDAtoAMD is **source-available proprietary software**, not open source.
 

@@ -13,6 +13,7 @@ from pathlib import Path
 from .analyzer import analyze
 from .database import default_database_path, load_database
 from .matrix import render_matrix, write_matrix
+from .portplan import build_port_plan, render_port_plan
 
 
 def _text_report(report: dict) -> str:
@@ -43,11 +44,25 @@ def _find_hipcc() -> str | None:
     resolved = shutil.which("hipcc")
     if resolved:
         return resolved
-    if platform.system() != "Windows":
-        return None
-    root = Path(os.environ.get("ProgramFiles", r"C:\\Program Files")) / "AMD" / "ROCm"
-    candidates = sorted(root.glob("*/bin/hipcc.exe"), reverse=True)
-    return str(candidates[0]) if candidates else None
+    system = platform.system()
+    if system == "Windows":
+        root = Path(os.environ.get("ProgramFiles", r"C:\\Program Files")) / "AMD" / "ROCm"
+        candidates = sorted(root.glob("*/bin/hipcc.exe"), reverse=True)
+        return str(candidates[0]) if candidates else None
+    # Linux (and other Unix): common ROCm install layouts
+    candidates: list[Path] = [
+        Path("/opt/rocm/bin/hipcc"),
+    ]
+    rocm_path = os.environ.get("ROCM_PATH") or os.environ.get("HIP_PATH")
+    if rocm_path:
+        candidates.insert(0, Path(rocm_path) / "bin" / "hipcc")
+    # Versioned installs under /opt/rocm-*
+    versioned = sorted(Path("/opt").glob("rocm*/bin/hipcc"), reverse=True)
+    candidates.extend(versioned)
+    for path in candidates:
+        if path.is_file() and os.access(path, os.X_OK):
+            return str(path.resolve())
+    return None
 
 
 def _toolchain_report() -> dict:
@@ -79,6 +94,13 @@ def main(argv: list[str] | None = None) -> int:
     analyze_parser = commands.add_parser("analyze", help="Read-only CUDA-oriented project analysis")
     analyze_parser.add_argument("project", type=Path)
     analyze_parser.add_argument("--format", choices=("text", "json"), default="text")
+    port_plan_parser = commands.add_parser(
+        "port-plan",
+        help="Prioritized porting plan from analyze() findings (advisory; not migration)",
+    )
+    port_plan_parser.add_argument("project", type=Path)
+    port_plan_parser.add_argument("--format", choices=("text", "json"), default="text")
+    port_plan_parser.add_argument("--output", type=Path, help="Write plan to this file instead of stdout")
     matrix_parser = commands.add_parser("matrix", help="Generate or print COMPATIBILITY.md")
     matrix_parser.add_argument("--output", type=Path)
     doctor_parser = commands.add_parser("doctor", help="Report local analyzer/toolchain availability")
@@ -152,6 +174,19 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "analyze":
         report = analyze(args.project)
         print(json.dumps(report, indent=2) if args.format == "json" else _text_report(report))
+    elif args.command == "port-plan":
+        try:
+            report = analyze(args.project)
+            plan = build_port_plan(report)
+            payload = json.dumps(plan, indent=2) if args.format == "json" else render_port_plan(plan)
+            if args.output:
+                args.output.write_text(payload + ("\n" if not payload.endswith("\n") else ""), encoding="utf-8")
+                print(f"Wrote {args.output}")
+            else:
+                print(payload)
+        except (OSError, ValueError) as error:
+            print(f"Port plan failed: {error}")
+            return 1
     elif args.command == "matrix":
         entries = load_database()
         if args.output:
@@ -266,8 +301,13 @@ def _compile(source: Path, output: Path, arguments: list[str]) -> int:
     root = _rocm_root()
     if not root:
         raise RuntimeError("ROCm HIP SDK was not found")
-    hipify = root / "bin" / "hipify-clang.exe"
-    hipcc = root / "bin" / "hipcc.exe"
+    suffix = ".exe" if platform.system() == "Windows" else ""
+    hipify = root / "bin" / f"hipify-clang{suffix}"
+    hipcc = root / "bin" / f"hipcc{suffix}"
+    if not hipify.is_file():
+        raise RuntimeError(f"hipify-clang not found at {hipify}")
+    if not hipcc.is_file():
+        raise RuntimeError(f"hipcc not found at {hipcc}")
     translated = output.with_suffix(".hip.cpp")
     translated.parent.mkdir(parents=True, exist_ok=True)
     # HIPIFY owns AST-aware CUDA→HIP translation; retain original source and emit a separate artifact.

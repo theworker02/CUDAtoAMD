@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — acquisition-polish
+
+- Added `compat.portplan` with `build_port_plan()` / `render_port_plan()` to turn an `analyze()` report into a prioritized porting plan (UNSUPPORTED/NVIDIA_SPECIFIC first, per-file actions, effort hints, explicit non-migration caveats).
+- Added CLI command `compat port-plan` (`--format text|json`, optional `--output`).
+- Extended `_find_hipcc` / `compat doctor` to resolve Linux ROCm layouts (`$ROCM_PATH`/`$HIP_PATH`, `/opt/rocm/bin/hipcc`, `/opt/rocm*/bin/hipcc`) in addition to PATH and Windows Program Files discovery; `compat cc` uses platform-correct hipify/hipcc binary names.
+- Expanded developer docs: `docs/windows-deployment.md`, `docs/ai-compatibility.md`, `docs/drop-in-mode.md`, `docs/framework-integration.md`, `docs/cuda-wheel-execution.md`; added `docs/linux-developer-guide.md` and buyer-oriented `docs/ACQUISITION_GUIDE.md`.
+- Added acquisition packaging: root `ACQUISITION.md` and `docs/acquisition/` (README, EXECUTIVE_SUMMARY, KNOWN_LIMITATIONS, BUYER_DEMO).
+- Updated `PORTING.md` for `port-plan` and corrected the outdated claim that `compat run` is unexposed; README now links port-plan, acquisition materials, and expanded guides.
+- Added `tests/test_portplan.py`.
+- Added `ROADMAP.md`; expanded `LEGAL.md`, `SECURITY.md`, and `THIRD_PARTY.md` for diligence.
+- Added `.github/FUNDING.yml` (`github` + `thanks_dev` for theworker02).
+
 ## 1.4.0
 
 - Reworked the README into a complete GitHub-facing developer guide covering installation, native builds, diagnostics, source/PTX boundaries, explicit AMD modules, Python, wheels, verification evidence and clean-room limits.
