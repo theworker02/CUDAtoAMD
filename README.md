@@ -54,11 +54,13 @@ The analyzer requires Python 3.10+ and has no third-party dependencies. It is re
 ```powershell
 python -m compat analyze path/to/cuda-project
 python -m compat analyze path/to/cuda-project --format json
+python -m compat port-plan path/to/cuda-project
+python -m compat port-plan path/to/cuda-project --format json --output port-plan.json
 python -m compat matrix
 python -m compat doctor
 ```
 
-Use the output to decide whether a workload fits the implemented surface before attempting a port or native build.
+Use the analyzer and **port-plan** output to decide whether a workload fits the implemented surface before attempting a port or native build. `port-plan` prioritizes UNSUPPORTED/NVIDIA_SPECIFIC findings first and adds per-file actions and effort hints; it does **not** rewrite sources. See [PORTING.md](PORTING.md).
 
 ### 2. Build the native runtime on Windows
 
@@ -177,7 +179,7 @@ CUDAtoAMD blocks known CUDA-linked extension patterns unless a workflow has been
 | Graphs | Single-stream native capture, instantiate, replay, cancellation | CUDA graph facade remains limited |
 | Compiler | Bounded CUDA-syntax workflow and tested PTX subset | No general PTX/NVVM frontend or tensor-core translation |
 | Python | CFFI lifecycle and CPU-staged NumPy/PyTorch inference | No autograd, `torch.cuda` or transparent wheel support |
-| Diagnostics | Source analysis, compatibility matrix, toolchain, init and release checks | Results describe known scope, not a compatibility percentage |
+| Diagnostics | Source analysis, port-plan, compatibility matrix, toolchain, init and release checks | Results describe known scope, not a compatibility percentage |
 
 ## Verification evidence
 
@@ -190,6 +192,9 @@ The native vector-add fixture has been checked through both file and memory modu
 | Need | Read |
 | --- | --- |
 | Build and first native run | [Local developer guide](docs/local-developer-guide.md) |
+| Linux / ROCm paths | [Linux developer guide](docs/linux-developer-guide.md) |
+| Windows packaging & deploy | [Windows deployment](docs/windows-deployment.md) |
+| Analyze → prioritize → HIPIFY | [Porting workflow](PORTING.md) (`compat port-plan`) |
 | Real HIP initialization | [Initialization guide](docs/initialization.md) |
 | CUDA-facing source path | [CUDA source compatibility](docs/cuda-source-compatibility.md) |
 | PTX syntax and limits | [PTX subset](docs/ptx-subset.md) |
@@ -197,10 +202,13 @@ The native vector-add fixture has been checked through both file and memory modu
 | Math and neural APIs | [Native math](docs/native-math.md) |
 | Python lifecycle | [Python native bindings](docs/python-native.md) |
 | PyTorch-adjacent adapter | [Framework integration](docs/framework-integration.md) |
+| AI profile honesty | [AI compatibility](docs/ai-compatibility.md) |
+| Drop-in contract | [Drop-in mode](docs/drop-in-mode.md) |
 | CUDA wheel safety | [Wheel execution](docs/cuda-wheel-execution.md) |
 | Version and release validation | [Release checklist](RELEASING.md) |
 | API compatibility inventory | [Compatibility matrix](COMPATIBILITY.md) |
 | System design | [Architecture](ARCHITECTURE.md) |
+| Acquisition / diligence | [ACQUISITION.md](ACQUISITION.md), [Acquisition guide](docs/ACQUISITION_GUIDE.md), [Data room](docs/acquisition/) |
 
 ## Repository layout
 
