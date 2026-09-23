@@ -1,4 +1,4 @@
-# Commercial licensing — CUDAtoAMD
+# Commercial licensing â€” CUDAtoAMD
 
 CUDAtoAMD is **source-available proprietary software**, not open source.
 
@@ -23,7 +23,7 @@ Commercial terms are negotiated case-by-case. Topics often include:
 2. Reference **CUDAtoAMD** and whether you need: production use, redistribution, SaaS, or acquisition / partnership.
 3. Include approximate company size, use case, and timeline.
 
-Optional: open a GitHub Discussion or Issue titled `Commercial license inquiry` with non-sensitive details only — do not paste secrets.
+Optional: open a GitHub Discussion or Issue titled `Commercial license inquiry` with non-sensitive details only â€” do not paste secrets.
 
 ## License transition & enforcement
 
@@ -33,3 +33,7 @@ Read [`LICENSE_TRANSITION_NOTICE.md`](./LICENSE_TRANSITION_NOTICE.md) for the di
 
 **Primary:** GitHub [@theworker02](https://github.com/theworker02)  
 **Repository:** https://github.com/theworker02/CUDAtoAMD
+
+## After sale
+
+A completed acquisition or commercial license does **not** automatically convert CUDAtoAMD to open source. Post-closing rights are only those granted in the definitive agreement; absent an express open-source relicense, the Product stays proprietary.
